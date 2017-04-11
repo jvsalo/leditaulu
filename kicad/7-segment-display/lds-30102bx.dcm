@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP LDS-30102BX
+D DISPLAY 7 SEGMENTS common A.
+K 7 SEGMENTS
+F Display/LTC-6960HR.pdf
+$ENDCMP
+#
+#End Doc Library

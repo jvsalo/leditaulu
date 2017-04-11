@@ -1,4 +1,4 @@
-update=su  9. huhtikuuta 2017 18.35.22
+update=ma 10. huhtikuuta 2017 23.59.32
 version=1
 last_client=kicad
 [pcbnew]
@@ -59,3 +59,15 @@ LibName27=atmel
 LibName28=contrib
 LibName29=valves
 LibName30=kicad-ESP8266/ESP8266
+LibName31=driver/tlc59116ipwr
+LibName32=7-segment-display/lds-30102bx
+[schematic_editor]
+version=1
+PageLayoutDescrFile=
+PlotDirectoryName=
+SubpartIdSeparator=0
+SubpartFirstId=65
+NetFmtName=
+SpiceForceRefPrefix=0
+SpiceUseNetNumbers=0
+LabSize=40
