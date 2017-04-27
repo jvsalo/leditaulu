@@ -1,4 +1,4 @@
-update=ti 11. huhtikuuta 2017 18.08.21
+update=to 27. huhtikuuta 2017 13.52.00
 version=1
 last_client=kicad
 [pcbnew]
@@ -72,3 +72,4 @@ LibName30=kicad-ESP8266/ESP8266
 LibName31=driver/tlc59116ipwr
 LibName32=7-segment-display/lds-30102bx
 LibName33=nRF24L01+/nrf24l01+
+LibName34=switches
