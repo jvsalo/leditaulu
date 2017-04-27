@@ -1,6 +1,6 @@
-[submodule "kicad-ESP8266"]
-	path = kicad-ESP8266
-	url = https://github.com/jdunmire/kicad-ESP8266
 [submodule "kicad/mysensors_radios.pretty"]
 	path = kicad/mysensors_radios.pretty
 	url = https://github.com/mysensors-kicad/mysensors_radios.pretty
+[submodule "kicad/kicad-ESP8266"]
+	path = kicad/kicad-ESP8266
+	url = https://github.com/jdunmire/kicad-ESP8266
