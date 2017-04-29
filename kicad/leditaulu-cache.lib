@@ -136,6 +136,55 @@ X ~ 2 0 -100 80 U 50 50 1 1 P
 ENDDRAW
 ENDDEF
 #
+# D_Schottky_Small
+#
+DEF D_Schottky_Small D 0 10 N N 1 F N
+F0 "D" -50 80 50 H V L CNN
+F1 "D_Schottky_Small" -280 -80 50 H V L CNN
+F2 "" 0 0 50 V V C CNN
+F3 "" 0 0 50 V V C CNN
+$FPLIST
+ Diode_*
+ D-*
+ *SingleDiode
+ *_Diode_*
+ *SingleDiode*
+ D_*
+$ENDFPLIST
+DRAW
+P 2 0 1 0 -30 -40 -30 40 N
+P 2 0 1 0 -30 0 30 0 N
+P 3 0 1 0 -30 -40 -20 -40 -20 -30 N
+P 3 0 1 0 -30 40 -40 40 -40 30 N
+P 4 0 1 0 30 -40 -30 0 30 40 30 -40 N
+X K 1 -100 0 70 R 50 50 1 1 P
+X A 2 100 0 70 L 50 50 1 1 P
+ENDDRAW
+ENDDEF
+#
+# D_Zener_Small
+#
+DEF D_Zener_Small D 0 10 N N 1 F N
+F0 "D" 0 90 50 H V C CNN
+F1 "D_Zener_Small" 0 -90 50 H V C CNN
+F2 "" 0 0 50 V V C CNN
+F3 "" 0 0 50 V V C CNN
+$FPLIST
+ Diode_*
+ D-Pak_TO252AA
+ *SingleDiode
+ *SingleDiode*
+ *_Diode_*
+$ENDFPLIST
+DRAW
+P 2 0 1 0 30 0 -30 0 N
+P 3 0 1 0 -10 40 -30 40 -30 -40 N
+P 4 0 1 0 30 40 -30 0 30 -40 30 40 N
+X K 1 -100 0 70 R 50 50 1 1 P
+X A 2 100 0 70 L 50 50 1 1 P
+ENDDRAW
+ENDDEF
+#
 # ESP-12E
 #
 DEF ESP-12E U 0 40 Y Y 1 F N
@@ -187,6 +236,25 @@ P 2 0 1 0 -5 -100 5 -100 N
 P 2 0 1 0 0 -50 0 0 N
 P 2 0 1 0 50 -50 -50 -50 N
 X Earth 1 0 0 0 D 50 50 1 1 W N
+ENDDRAW
+ENDDEF
+#
+# Fuse_Small
+#
+DEF Fuse_Small F 0 10 N N 1 F N
+F0 "F" 0 -60 50 H V C CNN
+F1 "Fuse_Small" 0 60 50 H V C CNN
+F2 "" 0 0 50 H V C CNN
+F3 "" 0 0 50 H V C CNN
+$FPLIST
+ CP*
+ SM*
+$ENDFPLIST
+DRAW
+S -50 20 50 -20 0 1 0 N
+P 2 0 1 0 -50 0 50 0 N
+X ~ 1 -100 0 50 R 50 50 1 1 P
+X ~ 2 100 0 50 L 50 50 1 1 P
 ENDDRAW
 ENDDEF
 #
