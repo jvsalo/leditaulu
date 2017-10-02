@@ -27,6 +27,7 @@
 #include <avr/sleep.h>
 #include "RF24.h"
 #include "printf.h"
+#include "constants.h"
 
 #define BOARD_REMOTE_VER "1.0"
 
