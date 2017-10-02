@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<head>
+<title>Biklu scoreboard</title>
+<style type="text/css">
+.elem 
+{
+    display: inline-block;
+    vertical-align: top;
+    text-align:center;
+    margin: 10px;
+    font-size: 25px;
+    font-family: verdana;
+}
+.subelem
+{
+    margin: 10px;
+}
+</style>
+</head>
+<body>
+    <div id=container>
+        <div class=elem>
+            <div class=subelem>%s</div>
+            <div class=subelem>%d (%d)</div>
+        </div>
+        <div class=elem>
+            <div class=subelem>BREAK</div>
+            <div class=subelem>%d</div>
+        </div>
+        <div class=elem>
+            <div class=subelem>%s</div>
+            <div class=subelem>(%d) %d</div>
+        </div>
+    </div>
+</body>
