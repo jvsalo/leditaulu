@@ -11,10 +11,11 @@ FlashMem::FlashMem() {
 
   if (this->content.ssid_len <= 127 &&
       this->content.pwd_len  <= 127)
+  {
     this->content_valid = true;
-
-  this->content.ssid[content.ssid_len] = 0x00;
-  this->content.pwd[content.pwd_len] = 0x00;
+    this->content.ssid[content.ssid_len] = 0x00;
+    this->content.pwd[content.pwd_len] = 0x00;
+  }
 }
 
 bool FlashMem::is_valid() {
