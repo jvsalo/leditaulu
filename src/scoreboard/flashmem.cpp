@@ -1,13 +1,20 @@
 #include "flashmem.h"
 #include <EEPROM.h>
 
-FlashMem::FlashMem() {
+FlashMem::FlashMem() {}
+
+void FlashMem::init() {
   this->content_valid = false;
+  Serial.println("Initializing flashmem");
 
   EEPROM.begin(FLASHMEM_SZ);
 
-  for(size_t i = 0; i < sizeof(content); i++)
+  for(size_t i = 0; i < sizeof(content); i++) {
     this->content_bytes[i] = EEPROM.read(FLASHMEM_ADDR + i);
+    Serial.print((char)this->content_bytes[i]);
+  }
+
+  Serial.println("");
 
   if (this->content.ssid_len <= 127 &&
       this->content.pwd_len  <= 127)

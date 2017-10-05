@@ -450,6 +450,7 @@ void setup() {
   }
   driver.writeLedState();*/
 
+  flash.init();
   if (!flash.is_valid())
     Serial.println("WiFi parameters not valid");
 

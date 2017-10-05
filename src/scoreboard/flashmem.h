@@ -24,6 +24,7 @@ class FlashMem {
 
   public:
     FlashMem();
+    void init();
     bool is_valid();
     String get_ssid();
     String get_password();
