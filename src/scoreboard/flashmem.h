@@ -6,6 +6,9 @@
 #define FLASHMEM_SZ 512
 #define FLASHMEM_ADDR 0x00
 
+#define FLASHMEM_MAX_SSID_LEN (128-1)
+#define FLASHMEM_MAX_PWD_LEN (128-1)
+
 class FlashMem {
   private:
     struct flash_content {
@@ -15,8 +18,6 @@ class FlashMem {
       uint8_t pwd[128];
     } __attribute__((packed));
 
-    bool content_valid;
-
     union {
       struct flash_content content;
       uint8_t content_bytes[sizeof(struct flash_content)];
@@ -24,8 +25,7 @@ class FlashMem {
 
   public:
     FlashMem();
-    void init();
-    bool is_valid();
+    bool validate();
     String get_ssid();
     String get_password();
     bool set_ssid(String &ssid);

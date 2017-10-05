@@ -37,6 +37,7 @@ unsigned int button_time[SW_COUNT];
 bool button_handled[SW_COUNT];
 
 FlashMem flash;
+volatile bool reset_wifi = false;
 
 void serial_msg(const String& msg) {
   #ifdef SERIAL_DEBUG
@@ -297,8 +298,8 @@ Scoreboard scoreboard;
 #include <ESP8266WebServer.h>
 
 /* Set these to your desired credentials. */
-const char *ssid = "tuxera-visitors";
-const char *password = "12angrymen1957";
+const char *ssid = "snooker-config";
+const char *password = "salakala";
 
 ESP8266WebServer server(80);
 
@@ -377,6 +378,7 @@ void handleSetWifi() {
         Serial.println(String("Setting wifi to ") + ssid + "/" + password);
         server.sendHeader("Location","/");
         server.send(302, "text/html");
+        reset_wifi = true;
     } else {
         server.send(400, "text/html");
     }
@@ -394,24 +396,56 @@ void handleRoot() {
   Serial.println("Sent response");
 }
 
-void setupWebServer() {
-  delay(1000);
-  Serial.begin(115200);
-  Serial.println();
-  Serial.print("Configuring access point...");
+void setupWifi() {
+  Serial.println("Configuring wireless networking...");
   /* You can remove the password parameter if you want the AP to be open. */
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(ssid, password);
 
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
+  WiFi.disconnect(true);
+
+  if (!flash.validate()) {
+    Serial.println("Flash settings not valid, starting AP mode");
+    WiFi.mode(WIFI_AP);
+    WiFi.softAP(ssid, password);
   }
+
+  else {
+    Serial.println(String("WiFi STA settings: SSID = ") + flash.get_ssid() +
+                   ", password = " + flash.get_password());
+
+    WiFi.mode(WIFI_STA);
+
+    String spass = flash.get_password();
+    const char *cpassword = NULL;
+    if (spass.length() > 0) cpassword = spass.c_str();
+
+    WiFi.begin(flash.get_ssid().c_str(), cpassword);
+
+    for (int attempts = 0; attempts < 20 && WiFi.status() != WL_CONNECTED;
+         attempts++)
+    {
+      delay(500);
+      Serial.print(".");
+    }
+
+    Serial.println("");
+
+    if (WiFi.status() != WL_CONNECTED)
+    {
+      Serial.println("Unable to connect, reverting to AP mode");
+      WiFi.disconnect(true);
+      WiFi.mode(WIFI_AP);
+      WiFi.softAP(ssid, password);
+    }
+  }
+
   delay(500);
-  Serial.println("");
-  Serial.println("WiFi connected");
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
+  delay(1000);
+}
+
+void setupWebServer() {
+  Serial.println();
   server.on("/", handleRoot);
   server.on("/names", handleNameSettings);
   server.on("/setnames", handleSetNames);
@@ -436,6 +470,7 @@ void setup() {
   driver.init();
   delay(200);
   Serial.println("Hello, led display here");
+  setupWifi();
   setupWebServer();
   setupWebSocket();
   setupMDNS();
@@ -450,13 +485,6 @@ void setup() {
   }
   driver.writeLedState();*/
 
-  flash.init();
-  if (!flash.is_valid())
-    Serial.println("WiFi parameters not valid");
-
-  else
-    Serial.println(String("Wifi parameters: SSID = ") + flash.get_ssid() +
-                   ", password = " + flash.get_password());
 }
 
 void onButtonDown(int btn) {
@@ -617,6 +645,12 @@ void loop() {
   }
   server.handleClient();
   webSocket.loop();
+
+  if (reset_wifi) {
+    Serial.println("Resetting wifi...");
+    setupWifi();
+    reset_wifi = false;
+  }
   // put your main code here, to run repeatedly:
   /*for (int i = 0; i < NUMBER_OF_DISPLAYS; ++i) {
     driver.setNumber(i, (currentNumber + i) % 10);
