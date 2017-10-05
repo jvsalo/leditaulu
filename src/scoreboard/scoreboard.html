@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <head>
 <title>Biklu scoreboard</title>
-<style type="text/css">
+<style type='text/css'>
 .elem 
 {
     display: inline-block;
@@ -16,20 +16,44 @@
     margin: 10px;
 }
 </style>
+<script>
+    function renderScore(score) {
+        var A_score = document.getElementById('A_score');
+        var B_score = document.getElementById('B_score');
+        var brk = document.getElementById('break');
+        A_score.innerHTML = '' + score.scoreA + ' (' + score.setA + ')';
+        B_score.innerHTML = '' + '(' + score.setB + ') ' + score.scoreB;
+        brk.innerHTML = '' + score.break; 
+    }
+    window.onload = function() {
+        var connection = new WebSocket('ws://'+location.hostname+':81/',['arduino']);
+        connection.onopen = function () {  
+            console.log('Opened websocket connection');
+            connection.send('Connected');
+        }; 
+        connection.onerror = function (error) { 
+            console.log('WebSocket Error ', error);
+        };
+        connection.onmessage = function (e) {
+            console.log('got message: ' + e.data);
+            renderScore(JSON.parse(e.data));
+        };
+    }
+</script>
 </head>
 <body>
     <div id=container>
         <div class=elem>
-            <div class=subelem>%s</div>
-            <div class=subelem>%d (%d)</div>
+            <div class=subelem id=player_A>Player A</div>
+            <div class=subelem id=A_score></div>
         </div>
         <div class=elem>
             <div class=subelem>BREAK</div>
-            <div class=subelem>%d</div>
+            <div class=subelem id=break></div>
         </div>
         <div class=elem>
-            <div class=subelem>%s</div>
-            <div class=subelem>(%d) %d</div>
+            <div class=subelem id=player_B>Player B</div>
+            <div class=subelem id=B_score></div>
         </div>
     </div>
 </body>

@@ -3,6 +3,7 @@
  */
 
 #include <Wire.h>
+#include <WebSocketsServer.h>
 #include "RF24.h"
 #include "circular_buffer.h"
 #include "constants.h"
@@ -100,7 +101,6 @@ public:
 
   void setNumber(int disp, int number)
   {
-    Serial.println(String("Setting disp ") + disp + " to " + number);
     for (int i = 0; i < 8; ++i) {
       if ((1 << i) & led_numbers[number]) {
         setLedState(disp, i, true);
@@ -177,6 +177,7 @@ private:
   }
 };
 
+WebSocketsServer webSocket = WebSocketsServer(81);
 
 struct ScoreboardState {
     int break_points;
@@ -238,6 +239,17 @@ class Scoreboard {
         undoBuf.push_item(initialState);
     }
 
+    void genStateMsg(char* msg, size_t size) {
+        ScoreboardState state = undoBuf.peek_item();
+        int written;
+        written = snprintf(msg, size, "{\"scoreA\":\"%d\",\"scoreB\":\"%d\",\"setA\":\"%d\",\"setB\":\"%d\",\"break\":\"%d\"}",
+                 state.player_A_points, state.player_B_points, state.player_A_sets,
+                 state.player_B_sets, state.break_points);
+        if (written >= size) {
+            Serial.println("state msg buffer too small");
+        }
+    }
+
     void drawState(LedDisplayDriver driver) {
         ScoreboardState state = undoBuf.peek_item();
         /* Player A score */
@@ -256,6 +268,10 @@ class Scoreboard {
         driver.setNumber(DISP_B_SET, state.player_B_sets % 10);
 
         driver.writeLedState();
+
+        char stateMsg[100];
+        genStateMsg(stateMsg, 100);
+        webSocket.broadcastTXT(stateMsg);
     }
 
     ScoreboardState getState() {
@@ -278,16 +294,38 @@ const char *password = "12angrymen1957";
 
 ESP8266WebServer server(80);
 
+void onWebSocketEvent(uint8_t num, WStype_t type, uint8_t* payload, size_t len) {
+    switch(type) {
+        case WStype_DISCONNECTED:
+            Serial.println(String("") + String(num, DEC) + " disconnected");
+            break;
+        case WStype_CONNECTED:
+            Serial.println(String("") + String(num, DEC) + " connected");
+            char stateMsg[100];
+            scoreboard.genStateMsg(stateMsg, 100);
+            webSocket.sendTXT(num, stateMsg);
+            break;
+        case WStype_TEXT:
+            Serial.println(String("") + String(num, DEC) + " sent " + (char*)payload);
+            break;
+        case WStype_BIN:
+            Serial.println(String("") + String(num, DEC) + " sent binary");
+            break;
+    }
+}
+
+void setupWebSocket() {
+    webSocket.begin();
+    webSocket.onEvent(onWebSocketEvent);
+}
+
 /* Just a little test message.  Go to http://192.168.4.1 in a web browser
  * connected to this access point to see it.
  */
 void handleRoot() {
   Serial.println("Handle root");
-  char response[550];
-  ScoreboardState state = scoreboard.getState();
-  snprintf(response, 550,
-  "<!DOCTYPE html><head><title>Biklu scoreboard</title><style type=\"text/css\">.elem{display: inline-block; vertical-align: top; text-align:center; margin: 10px; font-size: 25px; font-family: verdana;}.subelem{margin: 10px;}</style></head><body> <div id=container> <div class=elem> <div class=subelem>%s</div><div class=subelem>%d (%d)</div></div><div class=elem> <div class=subelem>BREAK</div><div class=subelem>%d</div></div><div class=elem> <div class=subelem>%s</div><div class=subelem>(%d) %d</div></div></div></body>",
-  "PlayerA", state.player_A_points, state.player_A_sets, state.break_points, "PlayerB", state.player_B_sets, state.player_B_points);
+  const char* response = "<!DOCTYPE html><head><title>Biklu scoreboard</title><style type='text/css'>.elem{display: inline-block; vertical-align: top; text-align:center; margin: 10px; font-size: 25px; font-family: verdana;}.subelem{margin: 10px;}</style><script>function renderScore(score){var A_score=document.getElementById('A_score'); var B_score=document.getElementById('B_score'); var brk=document.getElementById('break'); A_score.innerHTML='' + score.scoreA + ' (' + score.setA + ')'; B_score.innerHTML='' + '(' + score.setB + ') ' + score.scoreB; brk.innerHTML='' + score.break;}window.onload=function(){var connection=new WebSocket('ws://'+location.hostname+':81/',['arduino']); connection.onopen=function (){console.log('Opened websocket connection'); connection.send('Connected');}; connection.onerror=function (error){console.log('WebSocket Error ', error);}; connection.onmessage=function (e){console.log('Received msg: ' + e.data);renderScore(JSON.parse(e.data));};}</script></head><body> <div id=container> <div class=elem> <div class=subelem id=player_A>Player A</div><div class=subelem id=A_score></div></div><div class=elem> <div class=subelem>BREAK</div><div class=subelem id=break></div></div><div class=elem> <div class=subelem id=player_B>Player B</div><div class=subelem id=B_score></div></div></div></body>";
+
   Serial.println("Created response");
   server.send(200, "text/html", response);
   Serial.println("Sent response");
@@ -323,6 +361,7 @@ void setup() {
   delay(200);
   Serial.println("Hello, led display here");
   setupWebServer();
+  setupWebSocket();
   for (int i = 0; i < SW_COUNT; ++i) {
     button_handled[i] = true;
   }
@@ -376,7 +415,6 @@ void onButtonDown(int btn) {
     default:
       Serial.println("Unknown button");
   }
-  Serial.println("Drawing state in onButtonDown");
   scoreboard.drawState(driver);
 }
 
@@ -417,7 +455,6 @@ void onButtonUp(int btn) {
     default:
       Serial.println("Unknown up event");
   }
-  Serial.println("Drawing state in btn up");
   scoreboard.drawState(driver);
 }
 
@@ -494,6 +531,7 @@ void loop() {
     parse_payload(buf);
   }
   server.handleClient();
+  webSocket.loop();
   // put your main code here, to run repeatedly:
   /*for (int i = 0; i < NUMBER_OF_DISPLAYS; ++i) {
     driver.setNumber(i, (currentNumber + i) % 10);
