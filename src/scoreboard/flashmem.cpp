@@ -7,7 +7,7 @@ FlashMem::FlashMem() {
   EEPROM.begin(FLASHMEM_SZ);
 
   for(size_t i = 0; i < sizeof(content); i++)
-    ((char*)&this->content)[i] = EEPROM.read(FLASHMEM_ADDR + i);
+    this->content_bytes[i] = EEPROM.read(FLASHMEM_ADDR + i);
 
   if (this->content.ssid_len <= 127 &&
       this->content.pwd_len  <= 127)
@@ -62,7 +62,7 @@ bool FlashMem::set_password(String &password) {
 
 bool FlashMem::commit() {
   for (size_t i = 0; i < sizeof(content); i++)
-    EEPROM.write(FLASHMEM_ADDR + i, ((char*)&this->content)[i]);
+    EEPROM.write(FLASHMEM_ADDR + i, this->content_bytes[i]);
 
   if (this->content.ssid_len <= 127 &&
       this->content.pwd_len  <= 127)

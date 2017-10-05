@@ -16,7 +16,11 @@ class FlashMem {
     } __attribute__((packed));
 
     bool content_valid;
-    struct flash_content content;
+
+    union {
+      struct flash_content content;
+      uint8_t content_bytes[sizeof(struct flash_content)];
+    };
 
   public:
     FlashMem();
