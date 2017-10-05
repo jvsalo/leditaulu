@@ -2,7 +2,7 @@
 <head>
 <title>Biklu scoreboard</title>
 <style type='text/css'>
-.elem 
+.elem
 {
     display: inline-block;
     vertical-align: top;
@@ -25,17 +25,17 @@
         var B_name = document.getElementById('player_B');
         A_score.innerHTML = '' + score.scoreA + ' (' + score.setA + ')';
         B_score.innerHTML = '' + '(' + score.setB + ') ' + score.scoreB;
-        brk.innerHTML = '' + score.break; 
+        brk.innerHTML = '' + score.break;
         A_name.innerHTML = '' + score.nameA;
         B_name.innerHTML = '' + score.nameB;
     }
     window.onload = function() {
         var connection = new WebSocket('ws://'+location.hostname+':81/',['arduino']);
-        connection.onopen = function () {  
+        connection.onopen = function () {
             console.log('Opened websocket connection');
             connection.send('Connected');
-        }; 
-        connection.onerror = function (error) { 
+        };
+        connection.onerror = function (error) {
             console.log('WebSocket Error ', error);
         };
         connection.onmessage = function (e) {

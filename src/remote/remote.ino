@@ -27,7 +27,7 @@
 #include <avr/sleep.h>
 #include "RF24.h"
 #include "printf.h"
-#include "constants.h"
+//#include "constants.h"
 
 #define BOARD_REMOTE_VER "1.0"
 
@@ -178,7 +178,7 @@ void input_setup() {
   TCNT2 = 0;                               /* Initialize counter value */
   TCCR2B |= (1 << CS22);                   /* 1/64 prescaler, 488 Hz */
   TIMSK2 |= (1 << TOIE2);                  /* Enable overflow interrupt */
-  
+
   PCMSK0 |= (1 << PCINT0);  /* Add PCINT0 to PCINT0 vector */
   PCMSK1 |= (1 << PCINT9);  /* Add PCINT9 to PCINT1 vector */
   PCMSK1 |= (1 << PCINT10); /* Add PCINT10 to PCINT1 vector */
@@ -245,7 +245,7 @@ void setup() {
  *
  *
  * Scoreboard payload format:
- * 
+ *
  *  +---------------+---------------+
  *  |  Down events  |   Up events   |
  *  +---------------+---------------+
@@ -312,7 +312,7 @@ void deep_sleep() {
 }
 
 void loop() {
-  while (true){//zmillis() - last_activity_time < IDLE_ON_TIME) {
+  while (millis() - last_activity_time < IDLE_ON_TIME) {
     /* Read button events and timers */
     noInterrupts();
     uint16_t cur_btn_up_events = button_up_events;
@@ -323,7 +323,7 @@ void loop() {
 
     if (cur_btn_up_events || cur_btn_down_events) {
       last_activity_time = millis();
-      send_btn_events(cur_btn_down_events, cur_btn_up_events);      
+      send_btn_events(cur_btn_down_events, cur_btn_up_events);
     }
 
     /* Always handle button events */
@@ -336,7 +336,9 @@ void loop() {
       }
     }
   }
-
-  //deep_sleep();
+  serial_msg("Sleeping..");
+  Serial.flush();
+  deep_sleep();
+  serial_msg("Woke up!");
   last_activity_time = millis();
 }
