@@ -348,10 +348,29 @@ void handleSetNames() {
     webSocket.broadcastTXT(stateMsg);
 }
 
-void handleSettings() {
-    Serial.println("Handle settings");
+void handleNameSettings() {
+    Serial.println("Handle name settings");
     const char* response = "<form action='/setnames'>Player A name:<br><input type='text' name='PlayerA'><br>Player B name:<br><input type='text' name='PlayerB'><br><br><input type='submit' value='submit'></form>";
     server.send(200, "text/html", response);
+}
+
+void handleWifiSettings() {
+    Serial.println("Handle wifi settings");
+    const char* response = "<form action='/setwifi'>SSID:<br><input type='text' name='SSID'><br>Password:<br><input type='text' name='PASSWORD'><br><br><input type='submit' value='submit'></form>";
+    server.send(200, "text/html", response);
+}
+
+void handleSetWifi() {
+    Serial.println("Handle set wifi");
+    if (server.hasArg("SSID") && server.hasArg("PASSWORD")) {
+        String ssid = server.arg("SSID");
+        String password = server.arg("PASSWORD");
+        Serial.println(String("Setting wifi to ") + ssid + "/" + password);
+        server.sendHeader("Location","/");
+        server.send(302, "text/html");
+    } else {
+        server.send(400, "text/html");
+    }
 }
 
 /* Just a little test message.  Go to http://192.168.4.1 in a web browser
@@ -385,8 +404,10 @@ void setupWebServer() {
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
   server.on("/", handleRoot);
-  server.on("/settings", handleSettings);
+  server.on("/names", handleNameSettings);
   server.on("/setnames", handleSetNames);
+  server.on("/wifi", handleWifiSettings);
+  server.on("/setwifi", handleSetWifi);
   server.begin();
   Serial.println("HTTP server started");
 }
