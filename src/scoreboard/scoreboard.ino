@@ -4,6 +4,7 @@
 
 #include <Wire.h>
 #include <WebSocketsServer.h>
+#include <ESP8266mDNS.h>
 #include "RF24.h"
 #include "circular_buffer.h"
 #include "constants.h"
@@ -27,6 +28,8 @@ const uint64_t nrf24_scoreboard_txpipe = 0x1389dfca645fabef;
 #define UP 1
 
 #define LONG_PRESS_TIME_MILLIS 2000
+
+#define SCOREBOARD_DNS_NAME "scoreboard"
 
 unsigned char button_state[SW_COUNT];
 unsigned int button_time[SW_COUNT];
@@ -344,6 +347,7 @@ void setupWebServer() {
     delay(500);
     Serial.print(".");
   }
+  delay(500);
   Serial.println("");
   Serial.println("WiFi connected");
   Serial.println("IP address: ");
@@ -351,6 +355,14 @@ void setupWebServer() {
   server.on("/", handleRoot);
   server.begin();
   Serial.println("HTTP server started");
+}
+
+void setupMDNS() {
+    if (MDNS.begin(SCOREBOARD_DNS_NAME)) {
+        Serial.println("MDNS responder started");
+    }
+    MDNS.addService("http", "tcp", 80);
+    MDNS.addService("ws", "tcp", 81);
 }
 
 void setup() {
@@ -362,6 +374,7 @@ void setup() {
   Serial.println("Hello, led display here");
   setupWebServer();
   setupWebSocket();
+  setupMDNS();
   for (int i = 0; i < SW_COUNT; ++i) {
     button_handled[i] = true;
   }
