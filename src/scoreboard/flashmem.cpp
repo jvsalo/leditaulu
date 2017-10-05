@@ -44,9 +44,6 @@ String FlashMem::get_password() {
 }
 
 bool FlashMem::set_ssid(String &ssid) {
-  if (!this->content_valid)
-    return false;
-
   for (size_t i = 0; i < ssid.length(); i++)
     this->content.ssid[i] = ssid.c_str()[i];
 
@@ -56,9 +53,6 @@ bool FlashMem::set_ssid(String &ssid) {
 }
 
 bool FlashMem::set_password(String &password) {
-  if (!this->content_valid)
-    return false;
-
   for (size_t i = 0; i < password.length(); i++)
     this->content.pwd[i] = password.c_str()[i];
 
