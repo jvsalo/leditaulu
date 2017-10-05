@@ -5,6 +5,7 @@
 #include <Wire.h>
 #include <WebSocketsServer.h>
 #include <ESP8266mDNS.h>
+#include <EEPROM.h>
 #include "RF24.h"
 #include "circular_buffer.h"
 #include "constants.h"
@@ -385,6 +386,10 @@ void setup() {
     driver.displayOff(i);
   }
   driver.writeLedState();*/
+
+  EEPROM.begin(512);
+  uint8_t val = EEPROM.read(0);
+  Serial.println(String("EEPROM value: ") + String(val));
 }
 
 void onButtonDown(int btn) {
@@ -537,6 +542,7 @@ int currentNumber = 0;
 void loop() {
   uint8_t pipe;
   uint8_t buf[5];
+  static unsigned long eeprom_timer = millis();
 
   check_buttons();
   if (nrf24.available(&pipe)) {
@@ -553,5 +559,12 @@ void loop() {
   Serial.println(String("Current number: ") + currentNumber);
   currentNumber = (currentNumber + 1) % 10;
   delay(2000);*/
+
+  if (millis() - eeprom_timer >= 5000) {
+    EEPROM.write(0, millis()/1000);
+    if (EEPROM.commit()) Serial.println("commit ok");
+    else Serial.println("commit failed");
+    eeprom_timer = millis();
+  }
 }
 
