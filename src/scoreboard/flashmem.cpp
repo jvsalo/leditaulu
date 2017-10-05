@@ -9,7 +9,7 @@ void FlashMem::init() {
 
   EEPROM.begin(FLASHMEM_SZ);
 
-  for(size_t i = 0; i < sizeof(content); i++) {
+  for(size_t i = 0; i < sizeof(this->content); i++) {
     this->content_bytes[i] = EEPROM.read(FLASHMEM_ADDR + i);
     Serial.print((char)this->content_bytes[i]);
   }
@@ -68,8 +68,12 @@ bool FlashMem::set_password(String &password) {
 }
 
 bool FlashMem::commit() {
-  for (size_t i = 0; i < sizeof(content); i++)
+  for (size_t i = 0; i < sizeof(this->content); i++) {
     EEPROM.write(FLASHMEM_ADDR + i, this->content_bytes[i]);
+    Serial.print((char)this->content_bytes[i]);
+  }
+
+  Serial.println("");
 
   if (this->content.ssid_len <= 127 &&
       this->content.pwd_len  <= 127)
