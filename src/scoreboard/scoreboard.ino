@@ -561,9 +561,11 @@ void loop() {
   delay(2000);*/
 
   if (millis() - eeprom_timer >= 5000) {
-    EEPROM.write(0, millis()/1000);
+    uint8_t val = millis()/1000;
+    EEPROM.write(0, val);
     if (EEPROM.commit()) Serial.println("commit ok");
     else Serial.println("commit failed");
+    Serial.println(String("Wrote ") + String(val));
     eeprom_timer = millis();
   }
 }
