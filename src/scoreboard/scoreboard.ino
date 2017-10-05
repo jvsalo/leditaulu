@@ -81,6 +81,8 @@ void radio_setup() {
  *             77
  */
 const uint8_t led_numbers[] = {0x7E, 0x24, 0x79, 0x6D, 0x27, 0x4F, 0x5F, 0x64, 0x7F, 0x6F};
+String player_A_name = "Player A";
+String player_B_name = "Player B";
 
 class LedDisplayDriver
 {
@@ -245,9 +247,9 @@ class Scoreboard {
     void genStateMsg(char* msg, size_t size) {
         ScoreboardState state = undoBuf.peek_item();
         int written;
-        written = snprintf(msg, size, "{\"scoreA\":\"%d\",\"scoreB\":\"%d\",\"setA\":\"%d\",\"setB\":\"%d\",\"break\":\"%d\"}",
+        written = snprintf(msg, size, "{\"scoreA\":\"%d\",\"scoreB\":\"%d\",\"setA\":\"%d\",\"setB\":\"%d\",\"break\":\"%d\",\"nameA\":\"%s\",\"nameB\":\"%s\"}",
                  state.player_A_points, state.player_B_points, state.player_A_sets,
-                 state.player_B_sets, state.break_points);
+                 state.player_B_sets, state.break_points, player_A_name.c_str(), player_B_name.c_str());
         if (written >= size) {
             Serial.println("state msg buffer too small");
         }
@@ -272,8 +274,8 @@ class Scoreboard {
 
         driver.writeLedState();
 
-        char stateMsg[100];
-        genStateMsg(stateMsg, 100);
+        char stateMsg[200];
+        genStateMsg(stateMsg, 200);
         webSocket.broadcastTXT(stateMsg);
     }
 
@@ -304,8 +306,8 @@ void onWebSocketEvent(uint8_t num, WStype_t type, uint8_t* payload, size_t len) 
             break;
         case WStype_CONNECTED:
             Serial.println(String("") + String(num, DEC) + " connected");
-            char stateMsg[100];
-            scoreboard.genStateMsg(stateMsg, 100);
+            char stateMsg[200];
+            scoreboard.genStateMsg(stateMsg, 200);
             webSocket.sendTXT(num, stateMsg);
             break;
         case WStype_TEXT:
@@ -322,12 +324,42 @@ void setupWebSocket() {
     webSocket.onEvent(onWebSocketEvent);
 }
 
+void handleSetNames() {
+    Serial.println("Setting names");
+    int error = 0;
+    if (server.hasArg("PlayerA")) {
+        Serial.println("Setting player A");
+        player_A_name = server.arg("PlayerA");
+    } else {
+        server.send(400, "text/html");
+        return;
+    }
+    if (server.hasArg("PlayerB")) {
+        Serial.println("Setting player B");
+        player_B_name = server.arg("PlayerB");
+    } else {
+        server.send(400, "text/html");
+        return;
+    }
+    char stateMsg[200];
+    scoreboard.genStateMsg(stateMsg, 200);
+    server.sendHeader("Location", "/");
+    server.send(302, "text/html");
+    webSocket.broadcastTXT(stateMsg);
+}
+
+void handleSettings() {
+    Serial.println("Handle settings");
+    const char* response = "<form action='/setnames'>Player A name:<br><input type='text' name='PlayerA'><br>Player B name:<br><input type='text' name='PlayerB'><br><br><input type='submit' value='submit'></form>";
+    server.send(200, "text/html", response);
+}
+
 /* Just a little test message.  Go to http://192.168.4.1 in a web browser
  * connected to this access point to see it.
  */
 void handleRoot() {
   Serial.println("Handle root");
-  const char* response = "<!DOCTYPE html><head><title>Biklu scoreboard</title><style type='text/css'>.elem{display: inline-block; vertical-align: top; text-align:center; margin: 10px; font-size: 25px; font-family: verdana;}.subelem{margin: 10px;}</style><script>function renderScore(score){var A_score=document.getElementById('A_score'); var B_score=document.getElementById('B_score'); var brk=document.getElementById('break'); A_score.innerHTML='' + score.scoreA + ' (' + score.setA + ')'; B_score.innerHTML='' + '(' + score.setB + ') ' + score.scoreB; brk.innerHTML='' + score.break;}window.onload=function(){var connection=new WebSocket('ws://'+location.hostname+':81/',['arduino']); connection.onopen=function (){console.log('Opened websocket connection'); connection.send('Connected');}; connection.onerror=function (error){console.log('WebSocket Error ', error);}; connection.onmessage=function (e){console.log('Received msg: ' + e.data);renderScore(JSON.parse(e.data));};}</script></head><body> <div id=container> <div class=elem> <div class=subelem id=player_A>Player A</div><div class=subelem id=A_score></div></div><div class=elem> <div class=subelem>BREAK</div><div class=subelem id=break></div></div><div class=elem> <div class=subelem id=player_B>Player B</div><div class=subelem id=B_score></div></div></div></body>";
+  const char* response = "<!DOCTYPE html><head><title>Biklu scoreboard</title><style type='text/css'>.elem{display: inline-block; vertical-align: top; text-align:center; margin: 10px; font-size: 25px; font-family: verdana;}.subelem{margin: 10px;}</style><script>function renderScore(score){var A_score=document.getElementById('A_score'); var B_score=document.getElementById('B_score'); var brk=document.getElementById('break'); var A_name=document.getElementById('player_A'); var B_name=document.getElementById('player_B'); A_score.innerHTML='' + score.scoreA + ' (' + score.setA + ')'; B_score.innerHTML='' + '(' + score.setB + ') ' + score.scoreB; brk.innerHTML='' + score.break; A_name.innerHTML='' + score.nameA; B_name.innerHTML='' + score.nameB;}window.onload=function(){var connection=new WebSocket('ws://'+location.hostname+':81/',['arduino']); connection.onopen=function (){console.log('Opened websocket connection'); connection.send('Connected');}; connection.onerror=function (error){console.log('WebSocket Error ', error);}; connection.onmessage=function (e){console.log('got message: ' + e.data); renderScore(JSON.parse(e.data));};}</script></head><body> <div id=container> <div class=elem> <div class=subelem id=player_A></div><div class=subelem id=A_score></div></div><div class=elem> <div class=subelem>BREAK</div><div class=subelem id=break></div></div><div class=elem> <div class=subelem id=player_B></div><div class=subelem id=B_score></div></div></div></body>";
 
   Serial.println("Created response");
   server.send(200, "text/html", response);
@@ -353,6 +385,8 @@ void setupWebServer() {
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
   server.on("/", handleRoot);
+  server.on("/settings", handleSettings);
+  server.on("/setnames", handleSetNames);
   server.begin();
   Serial.println("HTTP server started");
 }

@@ -21,9 +21,13 @@
         var A_score = document.getElementById('A_score');
         var B_score = document.getElementById('B_score');
         var brk = document.getElementById('break');
+        var A_name = document.getElementById('player_A');
+        var B_name = document.getElementById('player_B');
         A_score.innerHTML = '' + score.scoreA + ' (' + score.setA + ')';
         B_score.innerHTML = '' + '(' + score.setB + ') ' + score.scoreB;
         brk.innerHTML = '' + score.break; 
+        A_name.innerHTML = '' + score.nameA;
+        B_name.innerHTML = '' + score.nameB;
     }
     window.onload = function() {
         var connection = new WebSocket('ws://'+location.hostname+':81/',['arduino']);
@@ -44,7 +48,7 @@
 <body>
     <div id=container>
         <div class=elem>
-            <div class=subelem id=player_A>Player A</div>
+            <div class=subelem id=player_A></div>
             <div class=subelem id=A_score></div>
         </div>
         <div class=elem>
@@ -52,7 +56,7 @@
             <div class=subelem id=break></div>
         </div>
         <div class=elem>
-            <div class=subelem id=player_B>Player B</div>
+            <div class=subelem id=player_B></div>
             <div class=subelem id=B_score></div>
         </div>
     </div>
