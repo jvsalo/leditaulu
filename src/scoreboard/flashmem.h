@@ -21,8 +21,8 @@ class FlashMem {
   public:
     FlashMem();
     bool is_valid();
-    bool get_ssid(String &ssid);
-    bool get_password(String &ssid);
+    String get_ssid();
+    String get_password();
     bool set_ssid(String &ssid);
     bool set_password(String &password);
     bool commit();

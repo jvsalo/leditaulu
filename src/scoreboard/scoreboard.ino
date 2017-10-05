@@ -8,6 +8,7 @@
 #include "RF24.h"
 #include "circular_buffer.h"
 #include "constants.h"
+#include "flashmem.h"
 /* RADIO STUFF */
 
 /* Radio driver. CE on pin GPIO15, CSN on GPIO2 */
@@ -34,6 +35,8 @@ const uint64_t nrf24_scoreboard_txpipe = 0x1389dfca645fabef;
 unsigned char button_state[SW_COUNT];
 unsigned int button_time[SW_COUNT];
 bool button_handled[SW_COUNT];
+
+FlashMem flash;
 
 void serial_msg(const String& msg) {
   #ifdef SERIAL_DEBUG
@@ -365,6 +368,12 @@ void handleSetWifi() {
     if (server.hasArg("SSID") && server.hasArg("PASSWORD")) {
         String ssid = server.arg("SSID");
         String password = server.arg("PASSWORD");
+        flash.set_ssid(ssid);
+        flash.set_password(password);
+        if (!flash.commit()) {
+          server.send(400, "text/html");
+          return;
+        }
         Serial.println(String("Setting wifi to ") + ssid + "/" + password);
         server.sendHeader("Location","/");
         server.send(302, "text/html");
@@ -440,6 +449,13 @@ void setup() {
     driver.displayOff(i);
   }
   driver.writeLedState();*/
+
+  if (!flash.is_valid())
+    Serial.println("WiFi parameters not valid");
+
+  else
+    Serial.println(String("Wifi parameters: SSID = ") + flash.get_ssid() +
+                   ", password = " + flash.get_password());
 }
 
 void onButtonDown(int btn) {

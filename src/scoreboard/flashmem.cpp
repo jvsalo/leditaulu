@@ -9,7 +9,8 @@ FlashMem::FlashMem() {
   for(size_t i = 0; i < sizeof(content); i++)
     ((char*)&this->content)[i] = EEPROM.read(FLASHMEM_ADDR + i);
 
-  if (content.ssid_len <= 127 && content.pwd_len <= 127)
+  if (this->content.ssid_len <= 127 &&
+      this->content.pwd_len  <= 127)
     this->content_valid = true;
 
   this->content.ssid[content.ssid_len] = 0x00;
@@ -20,22 +21,22 @@ bool FlashMem::is_valid() {
   return this->content_valid;
 }
 
-bool FlashMem::get_ssid(String &ssid) {
+String FlashMem::get_ssid() {
   if (!this->content_valid)
-    return false;
+    return "";
 
-  ssid = String((char*)this->content.ssid);
+  return String((char*)this->content.ssid);
 }
 
-bool FlashMem::get_password(String &password) {
+String FlashMem::get_password() {
   if (!this->content_valid)
-    return false;
+    return "";
 
-  password = String((char*)this->content.pwd);
+  return String((char*)this->content.pwd);
 }
 
 bool FlashMem::set_ssid(String &ssid) {
-  if (ssid.length() > 127)
+  if (!this->content_valid)
     return false;
 
   for (size_t i = 0; i < ssid.length(); i++)
@@ -47,7 +48,7 @@ bool FlashMem::set_ssid(String &ssid) {
 }
 
 bool FlashMem::set_password(String &password) {
-  if (password.length() > 127)
+  if (!this->content_valid)
     return false;
 
   for (size_t i = 0; i < password.length(); i++)
@@ -61,6 +62,10 @@ bool FlashMem::set_password(String &password) {
 bool FlashMem::commit() {
   for (size_t i = 0; i < sizeof(content); i++)
     EEPROM.write(FLASHMEM_ADDR + i, ((char*)&this->content)[i]);
+
+  if (this->content.ssid_len <= 127 &&
+      this->content.pwd_len  <= 127)
+    this->content_valid = true;
 
   return EEPROM.commit();
 }
